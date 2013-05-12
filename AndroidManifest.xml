@@ -16,6 +16,8 @@
         android:name="com.andrew67.ddrfinder.permission.MAPS_RECEIVE"
         android:protectionLevel="signature"/>
 	
+    <!-- Standard set of permissions required to use Google Maps API
+    	See https://developers.google.com/maps/documentation/android/start#specifying_permissions -->
 	<uses-permission android:name="com.andrew67.ddrfinder.permission.MAPS_RECEIVE"/>
 	<uses-permission android:name="android.permission.INTERNET"/>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>

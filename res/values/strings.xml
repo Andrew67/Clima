@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Clima</string>
+    <string name="app_name">DDR Finder</string>
     <string name="action_settings">Settings</string>
     <string name="title_home">Home</string>
     <string name="title_submit">Submit</string>
