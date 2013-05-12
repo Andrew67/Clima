@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package com.kaiserdev.android.clima;
+package com.andrew67.ddrfinder;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
