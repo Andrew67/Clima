@@ -40,20 +40,20 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
-import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
 
 
-public class MapViewer extends Activity {
+public class MapViewer extends FragmentActivity {
 
 	private class MarkerFeed{
 		LatLng location;
@@ -147,7 +147,7 @@ public class MapViewer extends Activity {
 	}
 	
 	private GoogleMap mMap;
-	private MapFragment mMapFragment = null;
+	private SupportMapFragment mMapFragment = null;
 
 	private ArrayList<Marker> currentMarkers;
 	
@@ -158,14 +158,10 @@ public class MapViewer extends Activity {
 		
 		currentMarkers = new ArrayList<Marker>();
 		
-		mMapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+		mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 		mMap = mMapFragment.getMap();
 		
-		Bundle b = this.getIntent().getExtras();
-		float lat = b.getFloat(MainActivity.CURRENT_LATITUDE);
-		float log = b.getFloat(MainActivity.CURRENT_LONGITUDE);
-		
-		LatLng home = new LatLng(lat,log);
+		LatLng home = new LatLng(18.201422,-67.145157);
 		CameraUpdate toHome = CameraUpdateFactory.newLatLngZoom(home,BASE_ZOOM);
 		mMap.animateCamera(toHome);
 		
