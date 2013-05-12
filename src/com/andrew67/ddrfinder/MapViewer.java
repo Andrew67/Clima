@@ -1,5 +1,9 @@
 /*
  * Copyright (c) 2013 Luis Torres
+ * Web: https://github.com/ltorres8890/Clima
+ * 
+ * Copyright (c) 2013 Andrés Cordero 
+ * Web: https://github.com/Andrew67/DdrFinder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +33,8 @@ import java.util.ArrayList;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
@@ -39,9 +43,8 @@ import org.json.JSONObject;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -50,50 +53,38 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 
 public class MapViewer extends FragmentActivity {
-
-	private class MarkerFeed{
-		LatLng location;
-		String timeSince;
-		String description;
-		float colorid;
-		public MarkerFeed(LatLng location, String timeSince,
-				String description, float resid) {
-			this.location = location;
-			this.timeSince = timeSince;
-			this.description = description;
-			this.colorid = resid;
-		}
-	}
 	
-	public static final int BASE_ZOOM = 8;
+	public static final int BASE_ZOOM = 12;
 	
 	private class MapLoader extends AsyncTask<LatLngBounds, Void, JSONArray>{
 
-		private static final String LOADER_API_URL = "http://android.kaiserdev.com/clima/api/getdetails.php";
+		private static final String LOADER_API_URL = "http://www.ddrfinder.tk/locate.php";
 		@Override
 		protected JSONArray doInBackground(LatLngBounds... box) {
 			try {
 				if(box.length == 0){throw new Exception();}
 				ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-				params.add(new BasicNameValuePair("NE_LAT", "" + box[0].northeast.latitude));
-				params.add(new BasicNameValuePair("NE_LOG", "" + box[0].northeast.longitude));
-				params.add(new BasicNameValuePair("SW_LAT", "" + box[0].southwest.latitude));
-				params.add(new BasicNameValuePair("SW_LOG", "" + box[0].southwest.longitude));
+				params.add(new BasicNameValuePair("source", "android"));
+				params.add(new BasicNameValuePair("latupper", "" + box[0].northeast.latitude));
+				params.add(new BasicNameValuePair("longupper", "" + box[0].northeast.longitude));
+				params.add(new BasicNameValuePair("latlower", "" + box[0].southwest.latitude));
+				params.add(new BasicNameValuePair("longlower", "" + box[0].southwest.longitude));
 				
 				HttpClient client = new DefaultHttpClient();
-				HttpPost post = new HttpPost(LOADER_API_URL);
-				post.setEntity(new UrlEncodedFormEntity(params));
+				HttpGet get = new HttpGet(LOADER_API_URL + "?" + URLEncodedUtils.format(params, "utf-8"));
 				
-				HttpResponse response = client.execute(post);
+				HttpResponse response = client.execute(get);
 				InputStream is = response.getEntity().getContent();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 				StringBuilder sb = new StringBuilder();
 				String line = reader.readLine();
 				while(line != null){sb.append(line);line = reader.readLine();}
+				Log.d("api", sb.toString());
 				return new JSONArray(sb.toString());
 			} 
 			catch(Exception e)
@@ -106,35 +97,17 @@ public class MapViewer extends FragmentActivity {
 		@Override
 		protected void onPostExecute(JSONArray result) {
 			super.onPostExecute(result);
-			ArrayList<MarkerFeed> out = new ArrayList<MapViewer.MarkerFeed>();
+			ArrayList<ArcadeLocation> out = new ArrayList<ArcadeLocation>();
 			try{
 				JSONObject obj;
 				for(int i = 0; i< result.length();i++)
 				{
 					obj = (JSONObject) result.get(i);
-					LatLng point = new LatLng(obj.getDouble("Latitude"), obj.getDouble("Longitude")); 
-					String timeSince = obj.getString("Time");
-					String Description = obj.getString("Desc");
-					float resId;
-					switch(obj.getInt("ImageCode"))
-					{
-					case 0: //sunny
-						resId = BitmapDescriptorFactory.HUE_GREEN;
-						break;
-					case 1: //cloudy
-						resId = BitmapDescriptorFactory.HUE_YELLOW;
-						break;
-					case 2: //dark
-						resId = BitmapDescriptorFactory.HUE_MAGENTA;
-						break;
-					case 3: //thunderstorm
-						resId = BitmapDescriptorFactory.HUE_RED;
-						break;
-					default:
-						resId = (float)-1.0;
-						break;
-					}
-					out.add(new MarkerFeed(point,timeSince,Description,resId));
+					int id = obj.getInt("id");
+					String name = obj.getString("name");
+					String city = obj.getString("city");
+					LatLng location = new LatLng(obj.getDouble("latitude"), obj.getDouble("longitude"));
+					out.add(new ArcadeLocation(id, name, city, location));
 				}
 				fillMap(out);
 			}
@@ -166,13 +139,10 @@ public class MapViewer extends FragmentActivity {
 		mMap.animateCamera(toHome);
 		
 		new AnimationWaiter().execute();
-		Toast.makeText(this, "Long press anywhere to search that area.", Toast.LENGTH_LONG).show();
-		mMap.setOnMapLongClickListener(new OnMapLongClickListener() {
+		mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
 			
 			@Override
-			public void onMapLongClick(LatLng arg0) {
-				CameraUpdate toHome = CameraUpdateFactory.newLatLng(arg0);
-				mMap.animateCamera(toHome);
+			public void onCameraChange(CameraPosition position) {
 				Toast.makeText(MapViewer.this, "Updating...", Toast.LENGTH_SHORT).show();
 				new AnimationWaiter().execute();
 			}
@@ -202,7 +172,7 @@ public class MapViewer extends FragmentActivity {
 		new MapLoader().execute(box);
 	}
 	
-	private void fillMap(ArrayList<MarkerFeed> feed){
+	private void fillMap(ArrayList<ArcadeLocation> feed){
 		if(feed.size() == 0)
 		{
 			Toast.makeText(this, "No entries available in this area.", Toast.LENGTH_SHORT).show();
@@ -213,18 +183,14 @@ public class MapViewer extends FragmentActivity {
 			currentMarkers.get(0).remove();
 			currentMarkers.remove(0);
 		}
-		for(MarkerFeed mf:feed)
+		for(ArcadeLocation mf:feed)
 		{
-			if(mf.colorid != -1.0)
-			{
-				currentMarkers.add(
-						mMap.addMarker(
-								new MarkerOptions()
-								.position(mf.location)
-								.title(mf.timeSince)
-								.snippet(mf.description)
-								.icon(BitmapDescriptorFactory.defaultMarker(mf.colorid))));
-			}
+			currentMarkers.add(
+					mMap.addMarker(
+							new MarkerOptions()
+							.position(mf.getLocation())
+							.title(mf.getName())
+							.snippet(mf.getCity())));
 		}
 	}
 }
