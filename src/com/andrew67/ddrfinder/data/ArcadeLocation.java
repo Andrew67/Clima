@@ -21,10 +21,13 @@
  * THE SOFTWARE.
  */
 
-package com.andrew67.ddrfinder;
+package com.andrew67.ddrfinder.data;
 
 import com.google.android.gms.maps.model.LatLng;
 
+/**
+ * Represents an arcade location from the database.
+ */
 public class ArcadeLocation {
 	private final int id;
 	private final String name;

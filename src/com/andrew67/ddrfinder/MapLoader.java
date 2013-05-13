@@ -45,6 +45,8 @@ import org.json.JSONObject;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.andrew67.ddrfinder.data.ApiResult;
+import com.andrew67.ddrfinder.data.ArcadeLocation;
 import com.andrew67.ddrfinder.interfaces.MessageDisplay;
 import com.andrew67.ddrfinder.interfaces.ProgressBarController;
 import com.google.android.gms.maps.GoogleMap;
@@ -53,7 +55,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapLoader extends AsyncTask<LatLngBounds, Void, List<ArcadeLocation>>{
+public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 
 		private static final String LOADER_API_URL = "http://www.ddrfinder.tk/locate.php";
 		private GoogleMap map;
@@ -76,28 +78,28 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, List<ArcadeLocation
 		}
 		
 		@Override
-		protected List<ArcadeLocation> doInBackground(LatLngBounds... box) {
+		protected ApiResult doInBackground(LatLngBounds... box) {
 			// Fetch machine data in JSON format
 			JSONArray result = new JSONArray();
 			try {
-				if(box.length == 0){throw new Exception();}
-				ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+				if (box.length == 0) throw new Exception();
+				final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 				params.add(new BasicNameValuePair("source", "android"));
 				params.add(new BasicNameValuePair("latupper", "" + box[0].northeast.latitude));
 				params.add(new BasicNameValuePair("longupper", "" + box[0].northeast.longitude));
 				params.add(new BasicNameValuePair("latlower", "" + box[0].southwest.latitude));
 				params.add(new BasicNameValuePair("longlower", "" + box[0].southwest.longitude));
 				
-				HttpClient client = new DefaultHttpClient();
-				HttpGet get = new HttpGet(LOADER_API_URL + "?" + URLEncodedUtils.format(params, "utf-8"));
+				final HttpClient client = new DefaultHttpClient();
+				final HttpGet get = new HttpGet(LOADER_API_URL + "?" + URLEncodedUtils.format(params, "utf-8"));
 				
-				HttpResponse response = client.execute(get);
+				final HttpResponse response = client.execute(get);
 				Log.d("api", "" + response.getStatusLine().getStatusCode());
-				InputStream is = response.getEntity().getContent();
-				BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-				StringBuilder sb = new StringBuilder();
-				String line = reader.readLine();
-				while(line != null){sb.append(line);line = reader.readLine();}
+				final InputStream is = response.getEntity().getContent();
+				final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+				final StringBuilder sb = new StringBuilder();
+				String line;
+				while ((line = reader.readLine()) != null) sb.append(line);
 				Log.d("api", sb.toString());
 				result = new JSONArray(sb.toString());
 			} 
@@ -109,49 +111,49 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, List<ArcadeLocation
 			// Return list
 			ArrayList<ArcadeLocation> out = new ArrayList<ArcadeLocation>();
 			try{
-				JSONObject obj;
-				for(int i = 0; i< result.length();i++)
+				for (int i = 0; i < result.length(); ++i)
 				{
-					obj = (JSONObject) result.get(i);
-					int id = obj.getInt("id");
-					String name = obj.getString("name");
-					String city = obj.getString("city");
-					LatLng location = new LatLng(obj.getDouble("latitude"), obj.getDouble("longitude"));
-					out.add(new ArcadeLocation(id, name, city, location));
+					final JSONObject obj = (JSONObject) result.get(i);
+					out.add(new ArcadeLocation(
+							obj.getInt("id"),
+							obj.getString("name"),
+							obj.getString("city"),
+							new LatLng(obj.getDouble("latitude"),
+									obj.getDouble("longitude"))
+							));
 				}
 			}
 			catch(Exception e)
 			{
 				out.clear();
 			}
-			return out;
+			return new ApiResult(out);
 		}
 		
 		@Override
-		protected void onPostExecute(List<ArcadeLocation> result) {
+		protected void onPostExecute(ApiResult result) {
 			super.onPostExecute(result);
 			pbc.hideProgressBar();
-			fillMap(result);
+			fillMap(result.getLocations());
 		}
 		
 		private void fillMap(List<ArcadeLocation> feed){
-			if(feed.size() == 0)
+			if (feed.size() == 0)
 			{
 				return;
 			}
-			while(markers.size()>0)
-			{
-				markers.get(0).remove();
-				markers.remove(0);
+			for (Marker marker : markers) {
+				marker.remove();
 			}
-			for(ArcadeLocation mf:feed)
+			markers.clear();
+			for (ArcadeLocation loc : feed)
 			{
 				markers.add(
 						map.addMarker(
 								new MarkerOptions()
-								.position(mf.getLocation())
-								.title(mf.getName())
-								.snippet(mf.getCity())));
+								.position(loc.getLocation())
+								.title(loc.getName())
+								.snippet(loc.getCity())));
 			}
 		}
 	}
