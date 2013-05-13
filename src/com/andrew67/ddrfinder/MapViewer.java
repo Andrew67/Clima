@@ -26,19 +26,8 @@
 
 package com.andrew67.ddrfinder;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.List;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -48,82 +37,19 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
-import android.widget.Toast;
 
 
 public class MapViewer extends FragmentActivity {
 	
 	public static final int BASE_ZOOM = 12;
 	
-	private class MapLoader extends AsyncTask<LatLngBounds, Void, JSONArray>{
-
-		private static final String LOADER_API_URL = "http://www.ddrfinder.tk/locate.php";
-		@Override
-		protected JSONArray doInBackground(LatLngBounds... box) {
-			try {
-				if(box.length == 0){throw new Exception();}
-				ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-				params.add(new BasicNameValuePair("source", "android"));
-				params.add(new BasicNameValuePair("latupper", "" + box[0].northeast.latitude));
-				params.add(new BasicNameValuePair("longupper", "" + box[0].northeast.longitude));
-				params.add(new BasicNameValuePair("latlower", "" + box[0].southwest.latitude));
-				params.add(new BasicNameValuePair("longlower", "" + box[0].southwest.longitude));
-				
-				HttpClient client = new DefaultHttpClient();
-				HttpGet get = new HttpGet(LOADER_API_URL + "?" + URLEncodedUtils.format(params, "utf-8"));
-				
-				HttpResponse response = client.execute(get);
-				Log.d("api", "" + response.getStatusLine().getStatusCode());
-				InputStream is = response.getEntity().getContent();
-				BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-				StringBuilder sb = new StringBuilder();
-				String line = reader.readLine();
-				while(line != null){sb.append(line);line = reader.readLine();}
-				Log.d("api", sb.toString());
-				return new JSONArray(sb.toString());
-			} 
-			catch(Exception e)
-			{
-				e.printStackTrace();
-				return new JSONArray();
-			}
-		}
-		
-		@Override
-		protected void onPostExecute(JSONArray result) {
-			super.onPostExecute(result);
-			ArrayList<ArcadeLocation> out = new ArrayList<ArcadeLocation>();
-			try{
-				JSONObject obj;
-				for(int i = 0; i< result.length();i++)
-				{
-					obj = (JSONObject) result.get(i);
-					int id = obj.getInt("id");
-					String name = obj.getString("name");
-					String city = obj.getString("city");
-					LatLng location = new LatLng(obj.getDouble("latitude"), obj.getDouble("longitude"));
-					out.add(new ArcadeLocation(id, name, city, location));
-				}
-				fillMap(out);
-			}
-			catch(Exception e)
-			{
-				out.clear();
-				fillMap(out);
-			}
-		}
-	}
-	
 	private GoogleMap mMap;
 	private SupportMapFragment mMapFragment = null;
 
-	private ArrayList<Marker> currentMarkers;
+	private List<Marker> currentMarkers;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -151,29 +77,7 @@ public class MapViewer extends FragmentActivity {
 	private void updateMap()
 	{
 		LatLngBounds box = mMap.getProjection().getVisibleRegion().latLngBounds;
-		new MapLoader().execute(box);
-	}
-	
-	private void fillMap(ArrayList<ArcadeLocation> feed){
-		if(feed.size() == 0)
-		{
-			Toast.makeText(this, "No entries available in this area.", Toast.LENGTH_SHORT).show();
-			return;
-		}
-		while(currentMarkers.size()>0)
-		{
-			currentMarkers.get(0).remove();
-			currentMarkers.remove(0);
-		}
-		for(ArcadeLocation mf:feed)
-		{
-			currentMarkers.add(
-					mMap.addMarker(
-							new MarkerOptions()
-							.position(mf.getLocation())
-							.title(mf.getName())
-							.snippet(mf.getCity())));
-		}
+		new MapLoader(mMap, currentMarkers).execute(box);
 	}
 }
 
