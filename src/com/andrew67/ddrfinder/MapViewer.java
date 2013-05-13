@@ -79,6 +79,7 @@ public class MapViewer extends FragmentActivity {
 				HttpGet get = new HttpGet(LOADER_API_URL + "?" + URLEncodedUtils.format(params, "utf-8"));
 				
 				HttpResponse response = client.execute(get);
+				Log.d("api", "" + response.getStatusLine().getStatusCode());
 				InputStream is = response.getEntity().getContent();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 				StringBuilder sb = new StringBuilder();
@@ -127,8 +128,8 @@ public class MapViewer extends FragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.fragment_view);
-		
+		setContentView(R.layout.map_viewer);
+				
 		currentMarkers = new ArrayList<Marker>();
 		
 		mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -138,32 +139,13 @@ public class MapViewer extends FragmentActivity {
 		CameraUpdate toHome = CameraUpdateFactory.newLatLngZoom(home,BASE_ZOOM);
 		mMap.animateCamera(toHome);
 		
-		new AnimationWaiter().execute();
 		mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
 			
 			@Override
 			public void onCameraChange(CameraPosition position) {
-				Toast.makeText(MapViewer.this, "Updating...", Toast.LENGTH_SHORT).show();
-				new AnimationWaiter().execute();
+				updateMap();
 			}
 		});
-	}
-	
-	private class AnimationWaiter extends AsyncTask<Long,Void,Long>{
-
-		protected Long doInBackground(Long... params) {
-			try {
-				Thread.sleep(1500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			return (long) 0;
-		}
-		protected void onPostExecute(Long result) {
-			super.onPostExecute(result);
-			updateMap();
-		}
-
 	}
 	
 	private void updateMap()
