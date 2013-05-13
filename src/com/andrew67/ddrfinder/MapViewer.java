@@ -39,6 +39,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
@@ -69,8 +71,19 @@ implements ProgressBarController, MessageDisplay {
 		mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 		mMap = mMapFragment.getMap();
 		
-		LatLng home = new LatLng(18.201422,-67.145157);
-		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(home,BASE_ZOOM));
+		mMap.setMyLocationEnabled(true);
+		final LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+		final Location lastKnown = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		if (lastKnown != null) {
+			mMap.animateCamera(
+					CameraUpdateFactory.newLatLngZoom(
+							new LatLng(lastKnown.getLatitude(),
+									lastKnown.getLongitude()),
+							BASE_ZOOM));
+		}
+		
+		//LatLng home = new LatLng(18.201422,-67.145157);
+		//mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(home,BASE_ZOOM));
 		
 		mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
 			

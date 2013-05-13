@@ -63,6 +63,9 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 		private ProgressBarController pbc;
 		private MessageDisplay display;
 		
+		/** Maximum distance for box boundaries, in degrees */
+		private int MAX_DISTANCE = 1;
+		
 		public MapLoader(GoogleMap map, List<Marker> markers,
 				ProgressBarController pbc, MessageDisplay display) {
 			super();
@@ -78,17 +81,26 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 		}
 		
 		@Override
-		protected ApiResult doInBackground(LatLngBounds... box) {
+		protected ApiResult doInBackground(LatLngBounds... boxes) {
 			// Fetch machine data in JSON format
 			JSONArray jArray = new JSONArray();
 			try {
-				if (box.length == 0) throw new Exception();
+				if (boxes.length == 0) throw new Exception();
+				final LatLngBounds box = boxes[0];
+				
+				// If box boundaries exceed valid API boundaries,
+				// avoid making the HTTP request altogether.
+				if (Math.abs(box.northeast.latitude - box.southwest.latitude) > MAX_DISTANCE
+					|| Math.abs(box.northeast.latitude - box.southwest.latitude) > MAX_DISTANCE) {
+					return new ApiResult(ApiResult.ERROR_ZOOM);
+				}
+				
 				final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 				params.add(new BasicNameValuePair("source", "android"));
-				params.add(new BasicNameValuePair("latupper", "" + box[0].northeast.latitude));
-				params.add(new BasicNameValuePair("longupper", "" + box[0].northeast.longitude));
-				params.add(new BasicNameValuePair("latlower", "" + box[0].southwest.latitude));
-				params.add(new BasicNameValuePair("longlower", "" + box[0].southwest.longitude));
+				params.add(new BasicNameValuePair("latupper", "" + box.northeast.latitude));
+				params.add(new BasicNameValuePair("longupper", "" + box.northeast.longitude));
+				params.add(new BasicNameValuePair("latlower", "" + box.southwest.latitude));
+				params.add(new BasicNameValuePair("longlower", "" + box.southwest.longitude));
 				
 				final HttpClient client = new DefaultHttpClient();
 				final HttpGet get = new HttpGet(LOADER_API_URL + "?" + URLEncodedUtils.format(params, "utf-8"));
@@ -141,7 +153,7 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 			{
 				out.clear();
 			}
-			return new ApiResult(out, box[0]);
+			return new ApiResult(out, boxes[0]);
 		}
 		
 		@Override
@@ -166,10 +178,6 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 			{
 				return;
 			}
-			for (Marker marker : markers) {
-				marker.remove();
-			}
-			markers.clear();
 			for (ArcadeLocation loc : feed)
 			{
 				markers.add(
