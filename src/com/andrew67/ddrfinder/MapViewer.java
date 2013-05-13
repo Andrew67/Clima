@@ -40,14 +40,17 @@ import com.google.android.gms.maps.model.Marker;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.View;
+import android.widget.ProgressBar;
 
 
-public class MapViewer extends FragmentActivity {
+public class MapViewer extends FragmentActivity implements ProgressBarController {
 	
 	public static final int BASE_ZOOM = 12;
 	
 	private GoogleMap mMap;
 	private SupportMapFragment mMapFragment = null;
+	private ProgressBar progressBar;
 
 	private List<Marker> currentMarkers;
 	
@@ -57,6 +60,8 @@ public class MapViewer extends FragmentActivity {
 		setContentView(R.layout.map_viewer);
 				
 		currentMarkers = new ArrayList<Marker>();
+		
+		progressBar = (ProgressBar) findViewById(R.id.loading);
 		
 		mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 		mMap = mMapFragment.getMap();
@@ -77,7 +82,17 @@ public class MapViewer extends FragmentActivity {
 	private void updateMap()
 	{
 		LatLngBounds box = mMap.getProjection().getVisibleRegion().latLngBounds;
-		new MapLoader(mMap, currentMarkers).execute(box);
+		new MapLoader(mMap, currentMarkers, this).execute(box);
+	}
+	
+	@Override
+	public void showProgressBar() {
+		progressBar.setVisibility(View.VISIBLE);
+	}
+	
+	@Override
+	public void hideProgressBar() {
+		progressBar.setVisibility(View.INVISIBLE);
 	}
 }
 

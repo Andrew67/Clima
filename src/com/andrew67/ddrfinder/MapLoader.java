@@ -56,11 +56,19 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, JSONArray>{
 		private static final String LOADER_API_URL = "http://www.ddrfinder.tk/locate.php";
 		private GoogleMap map;
 		private List<Marker> markers;
+		private ProgressBarController pbc;
 		
-		public MapLoader(GoogleMap map, List<Marker> markers) {
+		public MapLoader(GoogleMap map, List<Marker> markers,
+				ProgressBarController pbc) {
 			super();
 			this.map = map;
 			this.markers = markers;
+			this.pbc = pbc;
+			
+			// Show indeterminate progress bar
+			// Assumes this class is constructed followed by a call to execute()
+			// where the bar is hidden on data load completion
+			pbc.showProgressBar();
 		}
 		
 		@Override
@@ -97,6 +105,8 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, JSONArray>{
 		@Override
 		protected void onPostExecute(JSONArray result) {
 			super.onPostExecute(result);
+			pbc.hideProgressBar();
+			
 			ArrayList<ArcadeLocation> out = new ArrayList<ArcadeLocation>();
 			try{
 				JSONObject obj;
