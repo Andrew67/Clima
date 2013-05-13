@@ -45,25 +45,29 @@ import org.json.JSONObject;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.andrew67.ddrfinder.interfaces.MessageDisplay;
+import com.andrew67.ddrfinder.interfaces.ProgressBarController;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapLoader extends AsyncTask<LatLngBounds, Void, JSONArray>{
+public class MapLoader extends AsyncTask<LatLngBounds, Void, List<ArcadeLocation>>{
 
 		private static final String LOADER_API_URL = "http://www.ddrfinder.tk/locate.php";
 		private GoogleMap map;
 		private List<Marker> markers;
 		private ProgressBarController pbc;
+		private MessageDisplay display;
 		
 		public MapLoader(GoogleMap map, List<Marker> markers,
-				ProgressBarController pbc) {
+				ProgressBarController pbc, MessageDisplay display) {
 			super();
 			this.map = map;
 			this.markers = markers;
 			this.pbc = pbc;
+			this.display = display;
 			
 			// Show indeterminate progress bar
 			// Assumes this class is constructed followed by a call to execute()
@@ -72,7 +76,9 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, JSONArray>{
 		}
 		
 		@Override
-		protected JSONArray doInBackground(LatLngBounds... box) {
+		protected List<ArcadeLocation> doInBackground(LatLngBounds... box) {
+			// Fetch machine data in JSON format
+			JSONArray result = new JSONArray();
 			try {
 				if(box.length == 0){throw new Exception();}
 				ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -93,20 +99,14 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, JSONArray>{
 				String line = reader.readLine();
 				while(line != null){sb.append(line);line = reader.readLine();}
 				Log.d("api", sb.toString());
-				return new JSONArray(sb.toString());
+				result = new JSONArray(sb.toString());
 			} 
 			catch(Exception e)
 			{
 				e.printStackTrace();
-				return new JSONArray();
 			}
-		}
-		
-		@Override
-		protected void onPostExecute(JSONArray result) {
-			super.onPostExecute(result);
-			pbc.hideProgressBar();
 			
+			// Return list
 			ArrayList<ArcadeLocation> out = new ArrayList<ArcadeLocation>();
 			try{
 				JSONObject obj;
@@ -119,13 +119,19 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, JSONArray>{
 					LatLng location = new LatLng(obj.getDouble("latitude"), obj.getDouble("longitude"));
 					out.add(new ArcadeLocation(id, name, city, location));
 				}
-				fillMap(out);
 			}
 			catch(Exception e)
 			{
 				out.clear();
-				fillMap(out);
 			}
+			return out;
+		}
+		
+		@Override
+		protected void onPostExecute(List<ArcadeLocation> result) {
+			super.onPostExecute(result);
+			pbc.hideProgressBar();
+			fillMap(result);
 		}
 		
 		private void fillMap(List<ArcadeLocation> feed){

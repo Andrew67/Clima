@@ -21,8 +21,11 @@
  * THE SOFTWARE.
  */
 
-package com.andrew67.ddrfinder;
+package com.andrew67.ddrfinder.interfaces;
 
+/**
+ * Interface for any class that can control a progress bar
+ */
 public interface ProgressBarController {
 	public void showProgressBar();
 	public void hideProgressBar();

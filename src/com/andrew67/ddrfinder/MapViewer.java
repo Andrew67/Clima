@@ -29,6 +29,8 @@ package com.andrew67.ddrfinder;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.andrew67.ddrfinder.interfaces.MessageDisplay;
+import com.andrew67.ddrfinder.interfaces.ProgressBarController;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -42,9 +44,11 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 
-public class MapViewer extends FragmentActivity implements ProgressBarController {
+public class MapViewer extends FragmentActivity
+implements ProgressBarController, MessageDisplay {
 	
 	public static final int BASE_ZOOM = 12;
 	
@@ -82,7 +86,7 @@ public class MapViewer extends FragmentActivity implements ProgressBarController
 	private void updateMap()
 	{
 		LatLngBounds box = mMap.getProjection().getVisibleRegion().latLngBounds;
-		new MapLoader(mMap, currentMarkers, this).execute(box);
+		new MapLoader(mMap, currentMarkers, this, this).execute(box);
 	}
 	
 	@Override
@@ -93,6 +97,11 @@ public class MapViewer extends FragmentActivity implements ProgressBarController
 	@Override
 	public void hideProgressBar() {
 		progressBar.setVisibility(View.INVISIBLE);
+	}
+
+	@Override
+	public void showMessage(String message) {
+		Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 	}
 }
 
