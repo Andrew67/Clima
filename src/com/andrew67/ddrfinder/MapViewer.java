@@ -26,12 +26,11 @@
 
 package com.andrew67.ddrfinder;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.andrew67.ddrfinder.interfaces.MessageDisplay;
 import com.andrew67.ddrfinder.interfaces.ProgressBarController;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -63,7 +62,7 @@ implements ProgressBarController, MessageDisplay {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_viewer);
 				
-		currentMarkers = new ArrayList<Marker>();
+		currentMarkers = new LinkedList<Marker>();
 		
 		progressBar = (ProgressBar) findViewById(R.id.loading);
 		
@@ -71,8 +70,7 @@ implements ProgressBarController, MessageDisplay {
 		mMap = mMapFragment.getMap();
 		
 		LatLng home = new LatLng(18.201422,-67.145157);
-		CameraUpdate toHome = CameraUpdateFactory.newLatLngZoom(home,BASE_ZOOM);
-		mMap.animateCamera(toHome);
+		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(home,BASE_ZOOM));
 		
 		mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
 			
@@ -85,7 +83,7 @@ implements ProgressBarController, MessageDisplay {
 	
 	private void updateMap()
 	{
-		LatLngBounds box = mMap.getProjection().getVisibleRegion().latLngBounds;
+		final LatLngBounds box = mMap.getProjection().getVisibleRegion().latLngBounds;
 		new MapLoader(mMap, currentMarkers, this, this).execute(box);
 	}
 	
