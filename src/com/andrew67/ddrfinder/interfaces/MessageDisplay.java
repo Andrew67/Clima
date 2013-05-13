@@ -27,5 +27,17 @@ package com.andrew67.ddrfinder.interfaces;
  * Interface for any class that implements the ability to show a message
  */
 public interface MessageDisplay {
+	/**
+	 * Display the specified message.
+	 * @param message
+	 */
 	public void showMessage(String message);
+	
+	/**
+	 * Display the specified message resource.
+	 * If the class does not have a way of loading resources,
+	 * it should throw an exception.
+	 * @param resourceId
+	 */
+	public void showMessage(int resourceId) throws RuntimeException;
 }

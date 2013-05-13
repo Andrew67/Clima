@@ -80,7 +80,7 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 		@Override
 		protected ApiResult doInBackground(LatLngBounds... box) {
 			// Fetch machine data in JSON format
-			JSONArray result = new JSONArray();
+			JSONArray jArray = new JSONArray();
 			try {
 				if (box.length == 0) throw new Exception();
 				final ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -94,14 +94,28 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 				final HttpGet get = new HttpGet(LOADER_API_URL + "?" + URLEncodedUtils.format(params, "utf-8"));
 				
 				final HttpResponse response = client.execute(get);
-				Log.d("api", "" + response.getStatusLine().getStatusCode());
-				final InputStream is = response.getEntity().getContent();
-				final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-				final StringBuilder sb = new StringBuilder();
-				String line;
-				while ((line = reader.readLine()) != null) sb.append(line);
-				Log.d("api", sb.toString());
-				result = new JSONArray(sb.toString());
+				final int statusCode = response.getStatusLine().getStatusCode();
+				Log.d("api", "" + statusCode);
+				
+				// Data loaded OK
+				if (statusCode == 200) {
+					final InputStream is = response.getEntity().getContent();
+					final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+					final StringBuilder sb = new StringBuilder();
+					String line;
+					while ((line = reader.readLine()) != null) sb.append(line);
+					Log.d("api", sb.toString());
+					jArray = new JSONArray(sb.toString());
+				}
+				// Code used for invalid parameters; in this case exceeding
+				// the limits of the boundary box
+				else if (statusCode == 400) {
+					return new ApiResult(ApiResult.ERROR_ZOOM);
+				}
+				// Unexpected error code
+				else {
+					return new ApiResult(ApiResult.ERROR_API);
+				}
 			} 
 			catch(Exception e)
 			{
@@ -111,9 +125,9 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 			// Return list
 			ArrayList<ArcadeLocation> out = new ArrayList<ArcadeLocation>();
 			try{
-				for (int i = 0; i < result.length(); ++i)
+				for (int i = 0; i < jArray.length(); ++i)
 				{
-					final JSONObject obj = (JSONObject) result.get(i);
+					final JSONObject obj = (JSONObject) jArray.get(i);
 					out.add(new ArcadeLocation(
 							obj.getInt("id"),
 							obj.getString("name"),
@@ -134,7 +148,17 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 		protected void onPostExecute(ApiResult result) {
 			super.onPostExecute(result);
 			pbc.hideProgressBar();
-			fillMap(result.getLocations());
+			
+			switch(result.getErrorCode()) {
+			case ApiResult.ERROR_NONE:
+				fillMap(result.getLocations());
+				break;
+			case ApiResult.ERROR_ZOOM:
+				display.showMessage(R.string.error_zoom);
+				break;
+			default:
+				display.showMessage(R.string.error_api);
+			}
 		}
 		
 		private void fillMap(List<ArcadeLocation> feed){

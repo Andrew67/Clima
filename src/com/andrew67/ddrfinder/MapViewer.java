@@ -103,5 +103,10 @@ implements ProgressBarController, MessageDisplay {
 	public void showMessage(String message) {
 		Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 	}
+
+	@Override
+	public void showMessage(int resourceId) {
+		Toast.makeText(this, resourceId, Toast.LENGTH_SHORT).show();
+	}
 }
 
