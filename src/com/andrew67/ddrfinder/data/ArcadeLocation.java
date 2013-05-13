@@ -26,7 +26,7 @@ package com.andrew67.ddrfinder.data;
 import com.google.android.gms.maps.model.LatLng;
 
 /**
- * Represents an arcade location from the database.
+ * An immutable class that represents an arcade location from the database.
  */
 public class ArcadeLocation {
 	private final int id;
@@ -55,5 +55,10 @@ public class ArcadeLocation {
 
 	public LatLng getLocation() {
 		return location;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		return this.id == ((ArcadeLocation) o).id;
 	}
 }

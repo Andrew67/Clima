@@ -25,14 +25,19 @@ package com.andrew67.ddrfinder.data;
 
 import java.util.List;
 
+import com.google.android.gms.maps.model.LatLngBounds;
+
 /**
- * Represents the result of an API query.
+ * An immutable class that represents the result of an API query.
  * Provides more information than a mere list (such as errors).
  */
 public class ApiResult {
+	/** Arcade locations returned by the query. */
 	private final List<ArcadeLocation> locations;
-	private final int errorCode;
+	/** Geographical boundary covered by the query. */
+	private final LatLngBounds bounds;
 	
+	private final int errorCode;
 	/** Everything is OK; can use the locations list. */
 	public static final int ERROR_NONE = 0;
 	/** An unexpected API error has occurred. */
@@ -40,18 +45,15 @@ public class ApiResult {
 	/** The user has zoomed out past the valid API boundary box values. */
 	public static final int ERROR_ZOOM = 2;
 	
-	public ApiResult(List<ArcadeLocation> locations, int errorCode) {
+	public ApiResult(List<ArcadeLocation> locations, LatLngBounds bounds) {
 		this.locations = locations;
-		this.errorCode = errorCode;
-	}
-	
-	public ApiResult(List<ArcadeLocation> locations) {
-		this.locations = locations;
+		this.bounds = bounds;
 		this.errorCode = ERROR_NONE;
 	}
 	
 	public ApiResult(int errorCode) {
 		this.locations = null;
+		this.bounds = null;
 		this.errorCode = errorCode;
 	}
 
@@ -61,5 +63,9 @@ public class ApiResult {
 
 	public int getErrorCode() {
 		return errorCode;
+	}
+	
+	public LatLngBounds getBounds() {
+		return bounds;
 	}
 }

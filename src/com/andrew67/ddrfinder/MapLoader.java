@@ -141,7 +141,7 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 			{
 				out.clear();
 			}
-			return new ApiResult(out);
+			return new ApiResult(out, box[0]);
 		}
 		
 		@Override
