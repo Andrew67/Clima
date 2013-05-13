@@ -82,9 +82,6 @@ implements ProgressBarController, MessageDisplay {
 							BASE_ZOOM));
 		}
 		
-		//LatLng home = new LatLng(18.201422,-67.145157);
-		//mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(home,BASE_ZOOM));
-		
 		mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
 			
 			@Override
