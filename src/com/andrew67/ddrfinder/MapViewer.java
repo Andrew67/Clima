@@ -39,8 +39,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
@@ -87,6 +89,17 @@ implements ProgressBarController, MessageDisplay {
 			@Override
 			public void onCameraChange(CameraPosition position) {
 				updateMap();
+			}
+		});
+		mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+			
+			@Override
+			public void onInfoWindowClick(Marker marker) {
+				final double latitude = marker.getPosition().latitude;
+				final double longitude = marker.getPosition().longitude;
+				startActivity(new Intent(Intent.ACTION_VIEW,
+						Uri.parse("geo:" + latitude + "," + longitude +
+								"?q=" + latitude + "," + longitude)));
 			}
 		});
 	}
