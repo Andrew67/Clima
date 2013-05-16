@@ -26,9 +26,10 @@
 
 package com.andrew67.ddrfinder;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.andrew67.ddrfinder.data.ArcadeLocation;
 import com.andrew67.ddrfinder.interfaces.MessageDisplay;
 import com.andrew67.ddrfinder.interfaces.ProgressBarController;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -59,14 +60,13 @@ implements ProgressBarController, MessageDisplay {
 	private SupportMapFragment mMapFragment = null;
 	private ProgressBar progressBar;
 
-	private List<Marker> currentMarkers;
+	private final Map<Marker,ArcadeLocation> currentMarkers =
+			new HashMap<Marker,ArcadeLocation>();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_viewer);
-				
-		currentMarkers = new LinkedList<Marker>();
 		
 		progressBar = (ProgressBar) findViewById(R.id.loading);
 		
@@ -95,11 +95,15 @@ implements ProgressBarController, MessageDisplay {
 			
 			@Override
 			public void onInfoWindowClick(Marker marker) {
+				final ArcadeLocation location = currentMarkers.get(marker);
 				final double latitude = marker.getPosition().latitude;
 				final double longitude = marker.getPosition().longitude;
+				// Parenthesis cannot be in label name
+				final String label = location.getName().replace('(', '[').replace(')', ']');
 				startActivity(new Intent(Intent.ACTION_VIEW,
 						Uri.parse("geo:" + latitude + "," + longitude +
-								"?q=" + latitude + "," + longitude)));
+								"?q=" + latitude + "," + longitude +
+								"(" + label + ")")));
 			}
 		});
 	}

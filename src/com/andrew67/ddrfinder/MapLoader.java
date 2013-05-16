@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -59,14 +60,14 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 
 		private static final String LOADER_API_URL = "http://www.ddrfinder.tk/locate.php";
 		private GoogleMap map;
-		private List<Marker> markers;
+		private Map<Marker,ArcadeLocation> markers;
 		private ProgressBarController pbc;
 		private MessageDisplay display;
 		
 		/** Maximum distance for box boundaries, in degrees */
 		private int MAX_DISTANCE = 1;
 		
-		public MapLoader(GoogleMap map, List<Marker> markers,
+		public MapLoader(GoogleMap map, Map<Marker,ArcadeLocation> markers,
 				ProgressBarController pbc, MessageDisplay display) {
 			super();
 			this.map = map;
@@ -180,12 +181,13 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 			}
 			for (ArcadeLocation loc : feed)
 			{
-				markers.add(
+				markers.put(
 						map.addMarker(
 								new MarkerOptions()
 								.position(loc.getLocation())
 								.title(loc.getName())
-								.snippet(loc.getCity())));
+								.snippet(loc.getCity())),
+						loc);
 			}
 		}
 	}
