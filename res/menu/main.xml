@@ -1,9 +1,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
+        android:id="@+id/action_reload"
+        android:showAsAction="ifRoom"
+        android:icon="@drawable/navigation_refresh"
+        android:title="@string/action_reload"/>
+    
+    <item
         android:id="@+id/action_settings"
-        android:orderInCategory="100"
         android:showAsAction="never"
+        android:icon="@drawable/action_settings"
         android:title="@string/action_settings"/>
+    
+    <item
+        android:id="@+id/action_about"
+        android:showAsAction="never"
+        android:icon="@drawable/action_about"
+        android:title="@string/action_about"/>
 
 </menu>

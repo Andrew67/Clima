@@ -46,8 +46,9 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.view.View;
-import android.widget.ProgressBar;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.Window;
 import android.widget.Toast;
 
 
@@ -58,7 +59,7 @@ implements ProgressBarController, MessageDisplay {
 	
 	private GoogleMap mMap;
 	private SupportMapFragment mMapFragment = null;
-	private ProgressBar progressBar;
+	private MenuItem reloadButton;
 
 	private final Map<Marker,ArcadeLocation> currentMarkers =
 			new HashMap<Marker,ArcadeLocation>();
@@ -66,10 +67,12 @@ implements ProgressBarController, MessageDisplay {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.map_viewer);
 		
-		progressBar = (ProgressBar) findViewById(R.id.loading);
-		
+		setProgressBarIndeterminate(true);
+		setProgressBarIndeterminateVisibility(false);
+				
 		mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 		mMap = mMapFragment.getMap();
 		
@@ -88,7 +91,7 @@ implements ProgressBarController, MessageDisplay {
 			
 			@Override
 			public void onCameraChange(CameraPosition position) {
-				updateMap();
+				updateMap(false);
 			}
 		});
 		mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
@@ -108,7 +111,7 @@ implements ProgressBarController, MessageDisplay {
 		});
 	}
 	
-	private void updateMap()
+	private void updateMap(boolean force)
 	{
 		final LatLngBounds box = mMap.getProjection().getVisibleRegion().latLngBounds;
 		new MapLoader(mMap, currentMarkers, this, this).execute(box);
@@ -116,12 +119,14 @@ implements ProgressBarController, MessageDisplay {
 	
 	@Override
 	public void showProgressBar() {
-		progressBar.setVisibility(View.VISIBLE);
+		reloadButton.setVisible(false);
+		setProgressBarIndeterminateVisibility(true);
 	}
 	
 	@Override
 	public void hideProgressBar() {
-		progressBar.setVisibility(View.INVISIBLE);
+		setProgressBarIndeterminateVisibility(false);
+		reloadButton.setVisible(true);
 	}
 
 	@Override
@@ -132,6 +137,30 @@ implements ProgressBarController, MessageDisplay {
 	@Override
 	public void showMessage(int resourceId) {
 		Toast.makeText(this, resourceId, Toast.LENGTH_SHORT).show();
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.main, menu);
+		reloadButton = menu.findItem(R.id.action_reload);
+		return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.action_reload:
+			updateMap(true);
+			return true;
+		case R.id.action_about:
+			startActivity(new Intent(this, About.class));
+			return true;
+		case R.id.action_settings:
+			// Open Settings screen
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 }
 
