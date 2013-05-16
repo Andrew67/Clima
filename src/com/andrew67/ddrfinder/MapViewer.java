@@ -119,14 +119,14 @@ implements ProgressBarController, MessageDisplay {
 	
 	@Override
 	public void showProgressBar() {
-		reloadButton.setVisible(false);
+		if (reloadButton != null) reloadButton.setVisible(false);
 		setProgressBarIndeterminateVisibility(true);
 	}
 	
 	@Override
 	public void hideProgressBar() {
 		setProgressBarIndeterminateVisibility(false);
-		reloadButton.setVisible(true);
+		if (reloadButton != null) reloadButton.setVisible(true);
 	}
 
 	@Override
