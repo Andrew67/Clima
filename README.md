@@ -8,6 +8,7 @@ Live Demo
 Soon to provide an APK (on 1.0 beta ready) that uses the database from the ddr-finder [Live Demo](http://ddrfinder.tk).
 Note that for your own testing, you must request your own Google Maps V2 API Key
 in the [Google API Developer Console](https://code.google.com/apis/console/).
+Furthermore, please use your own Google Analytics identifier, so that usages of your app do not appear in my statistical data.
 
 License
 -------
