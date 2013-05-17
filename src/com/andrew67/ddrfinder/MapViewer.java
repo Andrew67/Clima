@@ -29,6 +29,7 @@ package com.andrew67.ddrfinder;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.andrew67.ddrfinder.adapters.MapLoader;
 import com.andrew67.ddrfinder.data.ArcadeLocation;
 import com.andrew67.ddrfinder.interfaces.MessageDisplay;
 import com.andrew67.ddrfinder.interfaces.ProgressBarController;
@@ -43,7 +44,6 @@ import com.google.android.gms.maps.model.Marker;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
@@ -67,7 +67,7 @@ implements ProgressBarController, MessageDisplay {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.map_viewer);
 		
 		setProgressBarIndeterminate(true);
@@ -99,14 +99,9 @@ implements ProgressBarController, MessageDisplay {
 			@Override
 			public void onInfoWindowClick(Marker marker) {
 				final ArcadeLocation location = currentMarkers.get(marker);
-				final double latitude = marker.getPosition().latitude;
-				final double longitude = marker.getPosition().longitude;
-				// Parenthesis cannot be in label name
-				final String label = location.getName().replace('(', '[').replace(')', ']');
-				startActivity(new Intent(Intent.ACTION_VIEW,
-						Uri.parse("geo:" + latitude + "," + longitude +
-								"?q=" + latitude + "," + longitude +
-								"(" + label + ")")));
+
+				startActivity(new Intent(MapViewer.this, LocationActions.class)
+						.putExtra("location", location));
 			}
 		});
 	}

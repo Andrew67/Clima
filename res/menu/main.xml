@@ -10,7 +10,8 @@
         android:id="@+id/action_settings"
         android:showAsAction="never"
         style="@style/AppTheme.Settings"
-        android:title="@string/action_settings"/>
+        android:title="@string/action_settings"
+        android:visible="false"/>
     
     <item
         android:id="@+id/action_about"

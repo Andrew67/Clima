@@ -23,22 +23,27 @@
 
 package com.andrew67.ddrfinder.data;
 
+import java.io.Serializable;
+
 import com.google.android.gms.maps.model.LatLng;
 
 /**
  * An immutable class that represents an arcade location from the database.
  */
-public class ArcadeLocation {
+public class ArcadeLocation implements Serializable {
+	private static final long serialVersionUID = 2L;
 	private final int id;
 	private final String name;
 	private final String city;
-	private final LatLng location;
+	private final double latitude;
+	private final double longitude;
 	
 	public ArcadeLocation(int id, String name, String city, LatLng location) {
 		this.id = id;
 		this.name = name;
 		this.city = city;
-		this.location = location;
+		this.latitude = location.latitude;
+		this.longitude = location.longitude;
 	}
 
 	public int getId() {
@@ -54,7 +59,7 @@ public class ArcadeLocation {
 	}
 
 	public LatLng getLocation() {
-		return location;
+		return new LatLng(latitude, longitude);
 	}
 	
 	@Override

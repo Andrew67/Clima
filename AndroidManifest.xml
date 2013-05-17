@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.andrew67.ddrfinder"
-    android:versionCode="3"
+    android:versionCode="4"
     android:versionName="1.0" >
 
     <uses-sdk
@@ -48,6 +48,7 @@
     		android:name="com.google.android.maps.v2.API_KEY"
     		android:value="AIzaSyCd56mJAgfzpvF4yL-YXj9S8JsQyCd84tc"/>
         <activity android:name="com.andrew67.ddrfinder.About"></activity>
+        <activity android:name="com.andrew67.ddrfinder.LocationActions"></activity>
        </application>
 
 </manifest>

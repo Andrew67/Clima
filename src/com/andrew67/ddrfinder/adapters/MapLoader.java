@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-package com.andrew67.ddrfinder;
+package com.andrew67.ddrfinder.adapters;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -46,6 +46,7 @@ import org.json.JSONObject;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.andrew67.ddrfinder.R;
 import com.andrew67.ddrfinder.data.ApiResult;
 import com.andrew67.ddrfinder.data.ArcadeLocation;
 import com.andrew67.ddrfinder.interfaces.MessageDisplay;
