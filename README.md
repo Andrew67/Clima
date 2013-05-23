@@ -5,14 +5,19 @@ Native Android version of [ddr-finder](https://github.com/Andrew67/ddr-finder) w
 
 Live Demo
 ---------
-Soon to provide an APK (on 1.0 beta ready) that uses the database from the ddr-finder [Live Demo](http://ddrfinder.tk).
-Note that for your own testing, you must request your own Google Maps V2 API Key
-in the [Google API Developer Console](https://code.google.com/apis/console/).
-Furthermore, please use your own Google Analytics identifier, so that usages of your app do not appear in my statistical data.
+Download the APK that uses the database from the ddr-finder [Live Demo](http://ddrfinder.tk).
 
 License
 -------
-MIT license (see LICENSE).
+MIT license (with some exceptions; see LICENSE).
+
+Developing your own version
+---------------------------
+* Request a Google Maps V2 API Key from the [Google API Developer Console](https://code.google.com/apis/console/).
+* Modify AndroidManifest.xml and add the new key.
+* Modify res/values/analytics.xml with your own Google Analytics tracking ID (or remove it if you have none).
+* Deploy your own version of [ddr-finder](https://github.com/Andrew67/ddr-finder) (this app will always be compatible with version 1.0 deployments).
+* Modify LOADER_API_URL in com.andrew67.ddrfinder.adapters.MapLoader to point to your API endpoint.
 
 Acknowledgments
 ---------------
