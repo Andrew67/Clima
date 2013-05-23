@@ -32,6 +32,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -52,6 +53,7 @@ import com.andrew67.ddrfinder.data.ArcadeLocation;
 import com.andrew67.ddrfinder.interfaces.MessageDisplay;
 import com.andrew67.ddrfinder.interfaces.ProgressBarController;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -60,13 +62,17 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 
 		private static final String LOADER_API_URL = "http://www.ddrfinder.tk/locate.php";
-		private GoogleMap map;
-		private Map<Marker,ArcadeLocation> markers;
-		private ProgressBarController pbc;
-		private MessageDisplay display;
+		private final GoogleMap map;
+		private final Map<Marker,ArcadeLocation> markers;
+		private final ProgressBarController pbc;
+		private final MessageDisplay display;
 		
 		/** Maximum distance for box boundaries, in degrees */
 		private int MAX_DISTANCE = 1;
+		
+		/** Precomiled pattern for searching for closed tag in names */
+		private static final Pattern closedPattern =
+				Pattern.compile(".*(?i:closed).*");
 		
 		public MapLoader(GoogleMap map, Map<Marker,ArcadeLocation> markers,
 				ProgressBarController pbc, MessageDisplay display) {
@@ -142,13 +148,28 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 				for (int i = 0; i < jArray.length(); ++i)
 				{
 					final JSONObject obj = (JSONObject) jArray.get(i);
+					final String name = obj.getString("name");
+					
+					boolean closed = false;
+					if (closedPattern.matcher(name).matches()) {
+						closed = true;
+					}
+					// Fields added after ddr-finder 1.0 API should be
+					// explicitly tested for, in order to maintain
+					// compatibility with deployments of older versions
+					boolean hasDDR = false;
+					if (obj.has("hasDDR") && obj.getInt("hasDDR") == 1) {
+						hasDDR = true;
+					}
+					
 					out.add(new ArcadeLocation(
 							obj.getInt("id"),
-							obj.getString("name"),
+							name,
 							obj.getString("city"),
 							new LatLng(obj.getDouble("latitude"),
-									obj.getDouble("longitude"))
-							));
+									obj.getDouble("longitude")),
+							hasDDR,
+							closed));
 				}
 			}
 			catch(Exception e)
@@ -182,13 +203,30 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 			}
 			for (ArcadeLocation loc : feed)
 			{
-				markers.put(
-						map.addMarker(
-								new MarkerOptions()
-								.position(loc.getLocation())
-								.title(loc.getName())
-								.snippet(loc.getCity())),
-						loc);
+				addMarker(map, markers, loc);
 			}
+		}
+		
+		public static void addMarker(GoogleMap map,
+				Map<Marker,ArcadeLocation> markers, ArcadeLocation loc) {
+			float hue = BitmapDescriptorFactory.HUE_RED;
+			
+			// Has the location been tagged as closed?
+			if (loc.isClosed()) {
+				hue = BitmapDescriptorFactory.HUE_ORANGE;
+			}
+			// Does the location have a DDR machine?
+			else if (loc.hasDDR()) {
+				hue = BitmapDescriptorFactory.HUE_AZURE;
+			}
+			
+			markers.put(
+					map.addMarker(
+							new MarkerOptions()
+							.position(loc.getLocation())
+							.title(loc.getName())
+							.snippet(loc.getCity())
+							.icon(BitmapDescriptorFactory.defaultMarker(hue))),
+					loc);
 		}
 	}

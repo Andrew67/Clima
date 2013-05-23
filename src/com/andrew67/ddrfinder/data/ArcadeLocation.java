@@ -31,19 +31,24 @@ import com.google.android.gms.maps.model.LatLng;
  * An immutable class that represents an arcade location from the database.
  */
 public class ArcadeLocation implements Serializable {
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 3L;
 	private final int id;
 	private final String name;
 	private final String city;
 	private final double latitude;
 	private final double longitude;
+	private final boolean hasDDR;
+	private final boolean closed;
 	
-	public ArcadeLocation(int id, String name, String city, LatLng location) {
+	public ArcadeLocation(int id, String name, String city, LatLng location,
+			boolean hasDDR, boolean closed) {
 		this.id = id;
 		this.name = name;
 		this.city = city;
 		this.latitude = location.latitude;
 		this.longitude = location.longitude;
+		this.hasDDR = hasDDR;
+		this.closed = closed;
 	}
 
 	public int getId() {
@@ -60,6 +65,14 @@ public class ArcadeLocation implements Serializable {
 
 	public LatLng getLocation() {
 		return new LatLng(latitude, longitude);
+	}
+	
+	public boolean hasDDR() {
+		return hasDDR;
+	}
+	
+	public boolean isClosed() {
+		return closed;
 	}
 	
 	@Override
