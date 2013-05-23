@@ -18,6 +18,7 @@ Developing your own version
 * Modify res/values/analytics.xml with your own Google Analytics tracking ID (or remove it if you have none).
 * Deploy your own version of [ddr-finder](https://github.com/Andrew67/ddr-finder) (this app will always be compatible with version 1.0 deployments).
 * Modify LOADER_API_URL in com.andrew67.ddrfinder.adapters.MapLoader to point to your API endpoint.
+* Modify about_url in res/values/strings.xml to point to your about page.
 
 Acknowledgments
 ---------------

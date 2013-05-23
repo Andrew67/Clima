@@ -8,8 +8,8 @@
     <string name="error_api">Error loading data</string>
     <string name="about_url">http://www.ddrfinder.tk/about.php?c=%1$s&amp;n=%2$s</string>
     <string-array name="location_actions">
-        <item >Navigate</item><item >More Info (Zenius-I-vanisher)</item>
-        
+        <item >Navigate</item>
+        <item >More Info (Zenius-I-vanisher)</item>
         <item >Copy GPS Coordinates</item>
         <item >Drive (Sygic)</item>
         <item >Walk (Sygic)</item>
