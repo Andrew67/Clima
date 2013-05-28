@@ -27,6 +27,8 @@
 package com.andrew67.ddrfinder;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import com.andrew67.ddrfinder.adapters.MapLoader;
@@ -64,6 +66,8 @@ implements ProgressBarController, MessageDisplay {
 
 	private final Map<Marker,ArcadeLocation> currentMarkers =
 			new HashMap<Marker,ArcadeLocation>();
+	private final List<LatLngBounds> loadedAreas =
+			new LinkedList<LatLngBounds>();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -107,10 +111,46 @@ implements ProgressBarController, MessageDisplay {
 		});
 	}
 	
-	private void updateMap(boolean force)
-	{
+	/**
+	 * Load arcade locations into the map
+	 * @param force Whether to ignore already loaded areas and load them again
+	 */
+	private void updateMap(boolean force) {
 		final LatLngBounds box = mMap.getProjection().getVisibleRegion().latLngBounds;
-		new MapLoader(mMap, currentMarkers, this, this).execute(box);
+		if (force || !alreadyLoaded(box)) {
+			new MapLoader(mMap, currentMarkers, this, this, loadedAreas).execute(box);
+		}
+	}
+	
+	/**
+	 * Test whether the given boundaries have already been loaded
+	 * @param box
+	 * @return
+	 */
+	private boolean alreadyLoaded(LatLngBounds box) {
+		// Test all four corners (best we can do)
+		final LatLng northeast = box.northeast;
+		final LatLng southwest = box.southwest;
+		final LatLng northwest = new LatLng(northeast.latitude, southwest.longitude);
+		final LatLng southeast = new LatLng(southwest.latitude, northeast.longitude);
+		
+		boolean loaded = false;
+		boolean loadedNE = false;
+		boolean loadedSW = false;
+		boolean loadedNW = false;
+		boolean loadedSE = false;
+		
+		for (LatLngBounds bounds : loadedAreas) {
+			if (bounds.contains(northeast)) loadedNE = true;
+			if (bounds.contains(southwest)) loadedSW = true;
+			if (bounds.contains(northwest)) loadedNW = true;
+			if (bounds.contains(southeast)) loadedSE = true;
+			if (loadedNE && loadedSW && loadedNW && loadedSE) break;
+		}
+		if (loadedNE && loadedSW && loadedNW && loadedSE)
+			loaded = true;
+		
+		return loaded;
 	}
 	
 	@Override

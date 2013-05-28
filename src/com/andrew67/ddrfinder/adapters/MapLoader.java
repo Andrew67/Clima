@@ -66,6 +66,7 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 		private final Map<Marker,ArcadeLocation> markers;
 		private final ProgressBarController pbc;
 		private final MessageDisplay display;
+		private final List<LatLngBounds> areas;
 		
 		/** Maximum distance for box boundaries, in degrees */
 		private int MAX_DISTANCE = 1;
@@ -75,12 +76,14 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 				Pattern.compile(".*(?i:closed).*");
 		
 		public MapLoader(GoogleMap map, Map<Marker,ArcadeLocation> markers,
-				ProgressBarController pbc, MessageDisplay display) {
+				ProgressBarController pbc, MessageDisplay display,
+				List<LatLngBounds> areas) {
 			super();
 			this.map = map;
 			this.markers = markers;
 			this.pbc = pbc;
 			this.display = display;
+			this.areas = areas;
 			
 			// Show indeterminate progress bar
 			// Assumes this class is constructed followed by a call to execute()
@@ -187,6 +190,7 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 			switch(result.getErrorCode()) {
 			case ApiResult.ERROR_NONE:
 				fillMap(result.getLocations());
+				areas.add(result.getBounds());
 				break;
 			case ApiResult.ERROR_ZOOM:
 				display.showMessage(R.string.error_zoom);
@@ -197,10 +201,6 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 		}
 		
 		private void fillMap(List<ArcadeLocation> feed){
-			if (feed.size() == 0)
-			{
-				return;
-			}
 			for (ArcadeLocation loc : feed)
 			{
 				addMarker(map, markers, loc);
