@@ -80,7 +80,7 @@ implements ProgressBarController, MessageDisplay {
 		mMap.setMyLocationEnabled(true);
 		final LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
 		final Location lastKnown = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-		if (lastKnown != null) {
+		if (lastKnown != null && savedInstanceState == null) {
 			mMap.animateCamera(
 					CameraUpdateFactory.newLatLngZoom(
 							new LatLng(lastKnown.getLatitude(),
