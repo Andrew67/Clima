@@ -23,20 +23,19 @@
 
 package com.andrew67.ddrfinder.data;
 
-import java.io.Serializable;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import com.google.android.gms.maps.model.LatLng;
 
 /**
  * An immutable class that represents an arcade location from the database.
  */
-public class ArcadeLocation implements Serializable {
-	private static final long serialVersionUID = 3L;
+public class ArcadeLocation implements Parcelable {
 	private final int id;
 	private final String name;
 	private final String city;
-	private final double latitude;
-	private final double longitude;
+	private final LatLng location;
 	private final boolean hasDDR;
 	private final boolean closed;
 	
@@ -45,8 +44,7 @@ public class ArcadeLocation implements Serializable {
 		this.id = id;
 		this.name = name;
 		this.city = city;
-		this.latitude = location.latitude;
-		this.longitude = location.longitude;
+		this.location = location;
 		this.hasDDR = hasDDR;
 		this.closed = closed;
 	}
@@ -64,7 +62,7 @@ public class ArcadeLocation implements Serializable {
 	}
 
 	public LatLng getLocation() {
-		return new LatLng(latitude, longitude);
+		return location;
 	}
 	
 	public boolean hasDDR() {
@@ -79,4 +77,44 @@ public class ArcadeLocation implements Serializable {
 	public boolean equals(Object o) {
 		return this.id == ((ArcadeLocation) o).id;
 	}
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel out, int flags) {
+		out.writeInt(id);
+		out.writeString(name);
+		out.writeString(city);
+		location.writeToParcel(out, flags);
+		final boolean[] bools = new boolean[2];
+		bools[0] = hasDDR;
+		bools[1] = closed;
+		out.writeBooleanArray(bools);
+	}
+	
+	private ArcadeLocation(Parcel in) {
+		id = in.readInt();
+		name = in.readString();
+		city = in.readString();
+		location = LatLng.CREATOR.createFromParcel(in);
+		final boolean[] bools = new boolean[2];
+		in.readBooleanArray(bools);
+		hasDDR = bools[0];
+		closed = bools[1];
+	}
+	
+	public static final Parcelable.Creator<ArcadeLocation> CREATOR
+		= new Parcelable.Creator<ArcadeLocation>() {
+		public ArcadeLocation createFromParcel(Parcel in) {
+			return new ArcadeLocation(in);
+		}
+		
+		public ArcadeLocation[] newArray(int size) {
+			return new ArcadeLocation[size];
+		}
+	};
+
 }
