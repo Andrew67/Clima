@@ -189,7 +189,7 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 			
 			switch(result.getErrorCode()) {
 			case ApiResult.ERROR_NONE:
-				fillMap(result.getLocations());
+				fillMap(map, markers, result.getLocations());
 				areas.add(result.getBounds());
 				break;
 			case ApiResult.ERROR_ZOOM:
@@ -200,7 +200,8 @@ public class MapLoader extends AsyncTask<LatLngBounds, Void, ApiResult>{
 			}
 		}
 		
-		private void fillMap(List<ArcadeLocation> feed){
+		public static void fillMap(GoogleMap map,
+				Map<Marker,ArcadeLocation> markers, List<ArcadeLocation> feed){
 			for (ArcadeLocation loc : feed)
 			{
 				addMarker(map, markers, loc);

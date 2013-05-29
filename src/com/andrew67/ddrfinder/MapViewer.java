@@ -26,9 +26,8 @@
 
 package com.andrew67.ddrfinder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import com.andrew67.ddrfinder.adapters.MapLoader;
@@ -66,8 +65,9 @@ implements ProgressBarController, MessageDisplay {
 
 	private final Map<Marker,ArcadeLocation> currentMarkers =
 			new HashMap<Marker,ArcadeLocation>();
-	private final List<LatLngBounds> loadedAreas =
-			new LinkedList<LatLngBounds>();
+	// Set as ArrayList instead of List due to Bundle packing
+	private final ArrayList<LatLngBounds> loadedAreas =
+			new ArrayList<LatLngBounds>();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,19 +77,33 @@ implements ProgressBarController, MessageDisplay {
 		
 		setProgressBarIndeterminate(true);
 		setProgressBarIndeterminateVisibility(false);
-				
+						
 		mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 		mMap = mMapFragment.getMap();
 		
 		mMap.setMyLocationEnabled(true);
 		final LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
 		final Location lastKnown = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		// Animate to user's current location if first load
 		if (lastKnown != null && savedInstanceState == null) {
 			mMap.animateCamera(
 					CameraUpdateFactory.newLatLngZoom(
 							new LatLng(lastKnown.getLatitude(),
 									lastKnown.getLongitude()),
 							BASE_ZOOM));
+		}
+		
+		// Restore previously loaded areas and locations if available
+		// (and re-create the location markers)
+		if (savedInstanceState != null &&
+				savedInstanceState.containsKey("loadedAreas") &&
+				savedInstanceState.containsKey("loadedLocations")) {
+			final ArrayList<LatLngBounds> savedLoadedAreas =
+					savedInstanceState.getParcelableArrayList("loadedAreas");
+			loadedAreas.addAll(savedLoadedAreas);
+			final ArrayList<ArcadeLocation> savedLoadedLocations =
+					savedInstanceState.getParcelableArrayList("loadedLocations");
+			MapLoader.fillMap(mMap, currentMarkers, savedLoadedLocations);
 		}
 		
 		mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
@@ -151,6 +165,18 @@ implements ProgressBarController, MessageDisplay {
 			loaded = true;
 		
 		return loaded;
+	}
+	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		
+		// Save the list of currently loaded map areas and locations
+		outState.putParcelableArrayList("loadedAreas", loadedAreas);
+		final ArrayList<ArcadeLocation> loadedLocations = 
+				new ArrayList<ArcadeLocation>(currentMarkers.size());
+		loadedLocations.addAll(currentMarkers.values());
+		outState.putParcelableArrayList("loadedLocations", loadedLocations);
 	}
 	
 	@Override
