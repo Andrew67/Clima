@@ -1,11 +1,9 @@
-DdrFinder
-=========
+DdrFinder-legacy
+================
 
 Native Android version of [ddr-finder](https://github.com/Andrew67/ddr-finder) with Google Maps integration.
 
-Live Demo
----------
-Download the APK that uses the database from the ddr-finder [Live Demo](http://ddrfinder.tk).
+See [DdrFinder](https://github.com/Andrew67/DdrFinder) for the new Android Studio-based project.
 
 License
 -------
